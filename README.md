@@ -1,6 +1,9 @@
-# Python-like Tokenizer in Rust
+Python-like Tokenizer in Rust
+=============================
 
-This project implements a Python-like tokenizer in Rust. It can tokenize a string into a sequence of tokens, which are represented by the `Token` enum. The supported tokens are:
+
+This project implements a Python-like tokenizer in Rust. It can tokenize a string into a sequence of tokens, which are
+represented by the `Token` enum. The supported tokens are:
 
 - `Name`: a name token, such as a function or variable name
 - `Number`: a number token, such as a literal integer or floating-point number
@@ -15,14 +18,15 @@ This project implements a Python-like tokenizer in Rust. It can tokenize a strin
 
 The tokenizer uses a simple state machine to tokenize the input text. It recognizes the following tokens:
 
-- Whitespace: spaces, tabs, and newlines
-- Numbers: integers and floating-point numbers
-- Names: identifiers and keywords
-- Strings: single- and double-quoted strings
-- Operators: arithmetic, comparison, and other operators
-- Comments: single- and multi-line comments
+- `Whitespace`: spaces, tabs, and newlines
+- `Numbers`: integers and floating-point numbers
+- `Names`: identifiers and keywords
+- `Strings`: single- and double-quoted strings
+- `Operators`: arithmetic, comparison, and other operators
+- `Comments`: single- and multi-line comments
 
-The tokenizer also provides a `tokenize` method that takes a string as input and returns a `Result` containing a vector of tokens.
+The tokenizer also provides a `tokenize` method that takes a string as input and returns a `Result` containing a vector
+of tokens.
 
 Here is an example of how to use the tokenizer:
 
@@ -52,19 +56,19 @@ Here is an example of how to handle these errors:
 ```rust
 match tokenizer.tokenize() {
     Ok(tokens) => {
-        // process tokens
+    // process tokens
     }
     Err(TokenizerError::Operator(op)) => {
-        // handle invalid operator
+    // handle invalid operator
     }
     Err(TokenizerError::Number(num)) => {
-        // handle invalid number
+    // handle invalid number
     }
     Err(TokenizerError::Indent(indent)) => {
-        // handle invalid indent
+    // handle invalid indent
     }
     Err(TokenizerError::String(string)) => {
-        // handle invalid string
+    // handle invalid string
     }
 }
 ```

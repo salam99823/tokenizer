@@ -1,7 +1,74 @@
+use crate::privatestructs::{Counter, Switch};
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::iter::Peekable;
 use std::str::Chars;
+
+mod privatestructs {
+    /// A simple counter.
+    #[derive(Debug)]
+    pub struct Counter {
+        count: usize,
+    }
+
+    impl Counter {
+        /// Creates a new `Counter` that starts at 0.
+        #[inline]
+        pub fn new() -> Counter {
+            Counter { count: 0 }
+        }
+
+        /// Returns a reference to the current count.
+        #[inline]
+        pub fn get(&self) -> &usize {
+            &self.count
+        }
+
+        /// Increments the counter by 1.
+        #[inline]
+        pub fn inc(&mut self) {
+            self.count += 1;
+        }
+
+        /// Decrements the counter by 1.
+        #[inline]
+        pub fn dec(&mut self) {
+            self.count -= 1;
+        }
+    }
+
+    /// A simple on/off switch.
+    #[derive(Debug)]
+    pub struct Switch {
+        switch: bool,
+    }
+
+    impl Switch {
+        /// Creates a new `Switch` that is initially off.
+        #[inline]
+        pub fn new() -> Switch {
+            Switch { switch: false }
+        }
+
+        /// Returns `true` if the switch is on, `false` if it is off.
+        #[inline]
+        pub fn is_on(&self) -> bool {
+            self.switch
+        }
+
+        /// Turns the switch on.
+        #[inline]
+        pub fn on(&mut self) {
+            self.switch = true;
+        }
+
+        /// Turns the switch off.
+        #[inline]
+        pub fn off(&mut self) {
+            self.switch = false;
+        }
+    }
+}
 
 /// The constant `OPERATORS` contains a string that lists
 /// all possible operators that can be used in expressions.
@@ -75,188 +142,6 @@ impl Error for TokenizerError {
             TokenizerError::Indent(ref s) => s,
             TokenizerError::String(ref s) => s,
         }
-    }
-}
-
-/// A simple counter.
-/// But inside an ['usize'] number, keep this in mind when using.
-///
-///['usize']: https://doc.rust-lang.org/std/primitive.usize.html
-/// # Examples
-///
-/// ```
-/// use tokenizer_py::Counter;
-///
-/// let mut counter = Counter::new();
-/// assert_eq!(0, *counter.get());
-/// counter.inc();
-/// counter.inc();
-/// assert_eq!(2, *counter.get());
-/// counter.dec();
-/// assert_eq!(1, *counter.get());
-/// ```
-#[derive(Debug)]
-pub struct Counter {
-    count: usize,
-}
-
-impl Counter {
-    /// Creates a new `Counter` that starts at 0.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tokenizer_py::Counter;
-    ///
-    /// let counter = Counter::new();
-    /// assert_eq!(0, *counter.get());
-    /// ```
-    #[inline]
-    pub const fn new() -> Counter {
-        Counter { count: 0 }
-    }
-
-    /// Returns a reference to the current count.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tokenizer_py::Counter;
-    ///
-    /// let mut counter = Counter::new();
-    /// assert_eq!(0, *counter.get());
-    /// counter.inc();
-    /// assert_eq!(1, *counter.get());
-    /// ```
-    #[inline]
-    pub fn get(&self) -> &usize {
-        &self.count
-    }
-
-    /// Increments the counter by 1.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tokenizer_py::Counter;
-    ///
-    /// let mut counter = Counter::new();
-    /// assert_eq!(0, *counter.get());
-    /// counter.inc();
-    /// assert_eq!(1, *counter.get());
-    /// ```
-    #[inline]
-    pub fn inc(&mut self) {
-        self.count += 1;
-    }
-
-    /// Decrements the counter by 1.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tokenizer_py::Counter;
-    ///
-    /// let mut counter = Counter::new();
-    /// counter.inc();
-    /// counter.inc();
-    /// assert_eq!(2, *counter.get());
-    /// counter.dec();
-    /// assert_eq!(1, *counter.get());
-    /// ```
-    #[inline]
-    pub fn dec(&mut self) {
-        self.count -= 1;
-    }
-}
-
-/// A simple on/off switch.
-///
-/// # Examples
-///
-/// ```
-/// use tokenizer_py::Switch;
-///
-/// let mut switch = Switch::new();
-/// assert!(!switch.is_on());
-/// switch.on();
-/// assert!(switch.is_on());
-/// switch.off();
-/// assert!(!switch.is_on());
-/// ```
-#[derive(Debug)]
-pub struct Switch {
-    switch: bool,
-}
-
-impl Switch {
-    /// Creates a new `Switch` that is initially off.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tokenizer_py::Switch;
-    ///
-    /// let switch = Switch::new();
-    /// assert!(!switch.is_on());
-    /// ```
-    #[inline]
-    pub const fn new() -> Switch {
-        Switch { switch: false }
-    }
-
-    /// Returns `true` if the switch is on, `false` if it is off.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tokenizer_py::Switch;
-    ///
-    /// let mut switch = Switch::new();
-    /// assert!(!switch.is_on());
-    /// switch.on();
-    /// assert!(switch.is_on());
-    /// switch.off();
-    /// assert!(!switch.is_on());
-    /// ```
-    #[inline]
-    pub fn is_on(&self) -> bool {
-        self.switch
-    }
-
-    /// Turns the switch on.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tokenizer_py::Switch;
-    ///
-    /// let mut switch = Switch::new();
-    /// assert!(!switch.is_on());
-    /// switch.on();
-    /// assert!(switch.is_on());
-    /// ```
-    #[inline]
-    pub fn on(&mut self) {
-        self.switch = true;
-    }
-
-    /// Turns the switch off.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use tokenizer_py::Switch;
-    ///
-    /// let mut switch = Switch::new();
-    /// switch.on();
-    /// assert!(switch.is_on());
-    /// switch.off();
-    /// assert!(!switch.is_on());
-    /// ```
-    #[inline]
-    pub fn off(&mut self) {
-        self.switch = false;
     }
 }
 
