@@ -3,6 +3,7 @@ name = "tokenizer_py"
 version = "0.1.0"
 edition = "2021"
 repository = "https://github.com/salam99823/tokenizer"
+description = "crate with a tokenizer that works like a Python tokenizer"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
