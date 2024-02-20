@@ -107,9 +107,8 @@ pub enum Token {
 /// ```
 /// use tokenizer_py::{Tokenizer, Token};
 /// let tokenizer = Tokenizer::new("1..1".to_string());
-/// let tokens = tokenizer.tokenize().unwrap();
-/// println!("{:?}", tokens);
-/// assert_eq!(Err)
+/// let err = tokenizer.tokenize();
+/// assert_eq!(Err(TokenizerError::Number("1..1".to_owned())), err);
 /// ```
 pub enum TokenizerError {
     /// An invalid operator was encountered.
