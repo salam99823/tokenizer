@@ -97,9 +97,9 @@ pub const OPERATORS: &str = "=+-*/%&|<>!^:;.,()[]{}@$?~`";
 ///                 "*" => Ok(left.parse::<isize>()? * right.parse::<isize>()?),
 ///                 "/" => Ok(left.parse::<isize>()? / right.parse::<isize>()?),
 ///                 "%" => Ok(left.parse::<isize>()? % right.parse::<isize>()?),
-///                 _ => todo!("Invalid operator"),
+///                 _ => panic!("Invalid operator"),
 ///             }
-///             _ => todo!("Invalid tokens"),
+///             _ => panic!("Invalid tokens"),
 ///         }
 ///     }
 /// }
