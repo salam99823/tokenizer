@@ -1,6 +1,8 @@
 Python-like Tokenizer in Rust
 =============================
 
+[![crates.io](https://img.shields.io/crates/v/yab2.svg)](https://crates.io/crates/tokenizer_py)
+[![minimum rustc 1.56](https://img.shields.io/badge/rustc-1.56+-blue?logo=rust)](https://rust-lang.github.io/rfcs/2495-min-rust-version.html)
 
 This project implements a Python-like tokenizer in Rust. It can tokenize a string into a sequence of tokens, which are
 represented by the `Token` enum. The supported tokens are:

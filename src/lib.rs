@@ -101,6 +101,16 @@ pub enum Token {
 
 
 /// An enumeration of possible errors that can occur during tokenization.
+///
+/// # Examples
+///
+/// ```
+/// use tokenizer_py::{Tokenizer, Token};
+/// let tokenizer = Tokenizer::new("1..1".to_string());
+/// let tokens = tokenizer.tokenize().unwrap();
+/// println!("{:?}", tokens);
+/// assert_eq!(Err)
+/// ```
 pub enum TokenizerError {
     /// An invalid operator was encountered.
     Operator(String),

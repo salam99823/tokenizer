@@ -6,7 +6,8 @@ repository = "https://github.com/salam99823/tokenizer"
 description = "crate with a tokenizer that works like a Python tokenizer"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
-license-file = "LICENSE"
+rust-version = "1.56"
+documentation = "https://docs.rs/tokenizer_py"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
