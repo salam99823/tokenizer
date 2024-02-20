@@ -2,7 +2,9 @@ Python-like Tokenizer in Rust
 =============================
 
 [![crates.io](https://img.shields.io/crates/v/yab2.svg)](https://crates.io/crates/tokenizer_py)
-[![minimum rustc 1.56](https://img.shields.io/badge/rustc-1.56+-blue?logo=rust)](https://rust-lang.github.io/rfcs/2495-min-rust-version.html)
+[![minimum rustc 1.56](
+https://img.shields.io/badge/rustc-1.56+-blue?logo=rust)](
+https://rust-lang.github.io/rfcs/2495-min-rust-version.html)
 
 This project implements a Python-like tokenizer in Rust. It can tokenize a string into a sequence of tokens, which are
 represented by the `Token` enum. The supported tokens are:
@@ -20,12 +22,19 @@ represented by the `Token` enum. The supported tokens are:
 
 The tokenizer uses a simple state machine to tokenize the input text. It recognizes the following tokens:
 
-- `Whitespace`: spaces, tabs, and newlines
-- `Numbers`: integers and floating-point numbers
-- `Names`: identifiers and keywords
-- `Strings`: single- and double-quoted strings
-- `Operators`: arithmetic, comparison, and other operators
-- `Comments`: single- and multi-line comments
+- [x] `Whitespace`: spaces, tabs, and newlines
+- [x] `Numbers`: integers and floating-point numbers
+    - [x] `float`: floats numbers
+    - [x] `int`: integer numbers
+- [x] `Names`: identifiers and keywords
+- [x] `Strings`: single- and double-quoted strings
+    - [x] `basic-String`
+    - [ ] `format-String`
+    - [ ] `byte-String`
+    - [ ] `raw-String`
+    - [ ] `multy-line-String`
+- [x] `Operators`: arithmetic, comparison, and other operators
+- [x] `Comments`: single- and multi-line comments
 
 The tokenizer also provides a `tokenize` method that takes a string as input and returns a `Result` containing a vector
 of tokens.
