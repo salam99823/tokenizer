@@ -75,7 +75,49 @@ mod privatestructs {
 pub const OPERATORS: &str = "=+-*/%&|<>!^:;.,()[]{}@$?~`";
 
 /// An enumeration of Python tokens.
-#[derive(Debug, PartialEq)]
+///
+/// # Example
+///
+/// ```rust
+/// use tokenizer_py::{Tokenizer, Token};
+///
+/// struct BinaryExp{
+///     left: Token, center: Token,right: Token,
+/// }
+/// impl BinaryExp {
+///     fn new(left: Token, center: Token, right: Token) -> Self {
+///         BinaryExp { left, center, right}
+///     }
+///     fn execute(&self) -> Result<isize, <isize as std::str::FromStr>::Err> {
+///         use Token::{Number, OP};
+///         match (&self.left, &self.center, &self.right) {
+///             (Number(ref left), OP(ref op), Number(ref right)) => match op.as_str() {
+///                 "+" => Ok(left.parse::<isize>()? + right.parse::<isize>()?),
+///                 "-" => Ok(left.parse::<isize>()? - right.parse::<isize>()?),
+///                 "*" => Ok(left.parse::<isize>()? * right.parse::<isize>()?),
+///                 "/" => Ok(left.parse::<isize>()? / right.parse::<isize>()?),
+///                 "%" => Ok(left.parse::<isize>()? % right.parse::<isize>()?),
+///                 _ => todo!("Invalid operator"),
+///             }
+///             _ => todo!("Invalid tokens"),
+///         }
+///     }
+/// }
+///
+/// let tokenizer = Tokenizer::new("10 + 10".to_owned());
+/// let mut tokens = tokenizer.tokenize().unwrap();
+/// let _ = tokens.pop(); // remove EndMarker
+///
+/// let binexp = BinaryExp::new(
+///     tokens.pop().unwrap(),
+///     tokens.pop().unwrap(),
+///     tokens.pop().unwrap()
+/// );
+///
+/// assert_eq!(binexp.execute(), Ok(20));
+///
+/// ```
+#[derive(Debug, PartialEq, Eq)]
 pub enum Token {
     /// Indicates the end of the program.
     EndMarker,
@@ -105,11 +147,14 @@ pub enum Token {
 /// # Examples
 ///
 /// ```
-/// use tokenizer_py::{Tokenizer, Token};
+/// use tokenizer_py::{Tokenizer, Token, TokenizerError};
+///
 /// let tokenizer = Tokenizer::new("1..1".to_string());
-/// let err = tokenizer.tokenize();
-/// assert_eq!(Err(TokenizerError::Number("1..1".to_owned())), err);
+/// if let Err(err) = tokenizer.tokenize() {
+///     assert_eq!(TokenizerError::Number("1..1".to_owned()), err);
+/// }
 /// ```
+#[derive(PartialEq, Eq)]
 pub enum TokenizerError {
     /// An invalid operator was encountered.
     Operator(String),
@@ -169,7 +214,7 @@ impl Error for TokenizerError {
 ///     Token::EndMarker,
 /// ]);
 /// ```
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Tokenizer {
     text: String,
 }
