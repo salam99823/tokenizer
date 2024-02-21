@@ -3,7 +3,7 @@ Python-like Tokenizer in Rust
 
 [![Static Badge](https://img.shields.io/badge/-salam99823%2Ftokenizer-blue?label=github)](https://github.com/salam99823/tokenizer)
 [![Crates.io Version](https://img.shields.io/crates/v/tokenizer_py)](https://crates.io/crates/tokenizer_py)
-[![Crates.io MSRV (version)](https://img.shields.io/crates/msrv/tokenizer_py/latest?logo=rust)](https://rust-lang.github.io/rfcs/2495-min-rust-version.html)
+[![Crates.io MSRV (version)](https://img.shields.io/crates/msrv/tokenizer_py?logo=rust)](https://rust-lang.github.io/rfcs/2495-min-rust-version.html)
 [![docs.rs (with version)](https://img.shields.io/docsrs/tokenizer_py/latest?logo=docs.rs)](https://docs.rs/tokenizer_py)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/salam99823/tokenizer/rust.yml)](https://github.com/salam99823/tokenizer/actions/workflows/rust.yml)
 ![Crates.io License](https://img.shields.io/crates/l/tokenizer_py)
