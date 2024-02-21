@@ -75,6 +75,9 @@ pub enum Token {
     Comment(String),
     /// A token indicating a new line, for compatibility with the original tokenizer.
     NL,
+    FStringStart(String),
+    FStringMiddle(String),
+    FStringEnd(String),
 }
 
 
@@ -100,6 +103,10 @@ pub enum TokenizerError {
     Indent(String),
     /// An invalid string was encountered.
     String(String),
+    /// An invalid escape sequance was encountered.
+    EscapeSequance(String),
+    /// An unexpected end of the string was encountered.
+    EndOfFile,
 }
 
 impl Debug for TokenizerError {
@@ -109,6 +116,8 @@ impl Debug for TokenizerError {
             TokenizerError::Number(s) => write!(f, "Invalid number: {:?}", s),
             TokenizerError::Indent(s) => write!(f, "Invalid indent: {:?}", s),
             TokenizerError::String(s) => write!(f, "Invalid string: {:?}", s),
+            TokenizerError::EscapeSequance(s) => write!(f, "Invalid escape sequance: {:?}", s),
+            TokenizerError::EndOfFile => write!(f, "Unexpected end of file"),
         }
     }
 }
@@ -120,6 +129,8 @@ impl Display for TokenizerError {
             TokenizerError::Number(s) => write!(f, "Invalid number: {}", s),
             TokenizerError::Indent(s) => write!(f, "Invalid indent: {}", s),
             TokenizerError::String(s) => write!(f, "Invalid string: {}", s),
+            TokenizerError::EscapeSequance(s) => write!(f, "Invalid escape sequance: {}", s),
+            TokenizerError::EndOfFile => write!(f, "Unexpected end of file"),
         }
     }
 }
@@ -131,6 +142,8 @@ impl Error for TokenizerError {
             TokenizerError::Number(ref s) => s,
             TokenizerError::Indent(ref s) => s,
             TokenizerError::String(ref s) => s,
+            TokenizerError::EscapeSequance(ref s) => s,
+            TokenizerError::EndOfFile => "Unexpected end of file",
         }
     }
 }
@@ -204,16 +217,17 @@ impl Tokenizer {
                 indent_count.dec();
             }
             if c.is_whitespace() {
-                match c {
-                    '\n' => if is_start_of_line.is_on() | opening.is_on() {
+                match (c, (is_start_of_line.is_on(), opening.is_on()), indent_count.get()) {
+                    ('\n', (true, true) | (true, false) | (false, true), _) => {
                         line_iter.next();
                         tokens.push(Token::NL);
-                    } else {
+                    }
+                    ('\n', (false, false), _) => {
                         line_iter.next();
                         tokens.push(Token::NewLine);
                         is_start_of_line.on();
                     }
-                    ' ' | '\t' => if is_start_of_line.is_on() && *indent_count.get() > 0 {
+                    (' ' | '\t', (true, _), 1..) => {
                         let new_indent = self.collect_indent(&mut line_iter)?;
                         if standart_indent.is_empty() {
                             standart_indent.push_str(new_indent.clone().as_str())
@@ -225,8 +239,6 @@ impl Tokenizer {
                             tokens.push(Token::Indent(new_indent));
                         }
                         is_start_of_line.off();
-                    } else {
-                        line_iter.next();
                     }
                     _ => { line_iter.next(); }
                 }
@@ -251,6 +263,13 @@ impl Tokenizer {
                 is_start_of_line.off();
             } else if c == &'#' {
                 tokens.push(Token::Comment(self.collect_comment(&mut line_iter)));
+            } else if *c == '\\' {
+                line_iter.next();
+                match line_iter.peek() {
+                    Some('\n') => { line_iter.next(); }
+                    Some(s) => return Err(TokenizerError::EscapeSequance(format!("\\{}", s))),
+                    None => return Err(TokenizerError::EndOfFile),
+                }
             } else {
                 line_iter.next();
             }
@@ -446,28 +465,48 @@ impl Tokenizer {
     fn collect_string(&self, line: &mut Peekable<Chars>) -> Result<String, TokenizerError> {
         let mut string = String::new();
         let quot = line.next().unwrap();
+        string.push(quot);
         while let Some(c) = line.peek() {
-            if *c == quot {
-                line.next();
-                break;
-            }
             match c {
-                '\\' => if let Some(c) = &line.next() {
-                    match c {
-                        '\\' => string.push('\\'),
-                        '"' => string.push('"'),
-                        '\'' => string.push('\''),
-                        'n' => string.push('\n'),
-                        'r' => string.push('\r'),
-                        't' => string.push('\t'),
-                        'b' => string.push('\x08'),
-                        'f' => string.push('\x0C'),
-                        _ => return Err(TokenizerError::String(string)),
+                '\\' => {
+                    line.next();
+                    if let Some(c) = &line.next() {
+                        match *c {
+                            '\\' => string.push('\\'),
+                            '"' => string.push('"'),
+                            '\'' => string.push('\''),
+                            'n' => string.push('\n'),
+                            'r' => string.push('\r'),
+                            't' => string.push('\t'),
+                            'b' => string.push('\x08'),
+                            'f' => string.push('\x0C'),
+                            'v' => string.push('\x0D'),
+                            'a' => string.push('\x07'),
+                            '\n' => {
+                                continue;
+                            }
+                            c => return Err(
+                                TokenizerError::EscapeSequance(
+                                    format!("unexpected escape sequence: '\\{}'", c)), ),
+                        }
+                    } else {
+                        return Err(TokenizerError::EndOfFile);
                     }
                 }
-                c => string.push(*c),
+                '\n' => return Err(TokenizerError::String(format!("{}\n", string))),
+                c => {
+                    if *c == quot {
+                        string.push(*c);
+                        line.next();
+                        break;
+                    }
+                    string.push(*c);
+                }
             }
             line.next();
+        }
+        if string.chars().filter(|c| *c == quot).count() < 2 {
+            return Err(TokenizerError::String(string));
         }
         Ok(string)
     }
@@ -487,19 +526,40 @@ mod tests {
 
     #[test]
     fn tokenizer_work() {
-        let tokenizer = Tokenizer::new("hello\n'world'\n2 + 2".to_owned());
+        let tokenizer = Tokenizer::new(
+            "hello\n'world'\n2 + 2\nfor i in range(10):\n    print(i)\npass"
+                .to_owned()
+        );
+        println!("hello\n'world'\n2 + 2\nfor i in range(10):\n    print(i)\npass\n");
         let tokens = tokenizer.tokenize().unwrap();
         let expects = vec![
             Token::Name("hello".to_owned()),
             Token::NewLine,
-            Token::String("world".to_owned()),
+            Token::String("'world'".to_owned()),
             Token::NewLine,
             Token::Number("2".to_owned()),
             Token::OP("+".to_owned()),
             Token::Number("2".to_owned()),
+            Token::NewLine,
+            Token::Name("for".to_owned()),
+            Token::Name("i".to_owned()),
+            Token::Name("in".to_owned()),
+            Token::Name("range".to_owned()),
+            Token::OP("(".to_owned()),
+            Token::Number("10".to_owned()),
+            Token::OP(")".to_owned()),
+            Token::OP(":".to_owned()),
+            Token::NewLine,
+            Token::Indent("    ".to_owned()),
+            Token::Name("print".to_owned()),
+            Token::OP("(".to_owned()),
+            Token::Name("i".to_owned()),
+            Token::OP(")".to_owned()),
+            Token::Dedent,
             Token::EndMarker,
         ];
         for (actual, expect) in tokens.iter().zip(expects.iter()) {
+            println!("{:?}", actual);
             assert_eq!(actual, expect);
         }
     }
