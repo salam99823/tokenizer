@@ -3,7 +3,6 @@ use std::fmt::{Debug, Display, Formatter};
 use std::iter::Peekable;
 use std::str::Chars;
 
-mod privatestructs;
 #[cfg(test)]
 mod tests;
 
@@ -41,9 +40,10 @@ pub const OPERATORS: &str = "=+-*/%&|<>!^:;.,()[]{}@$?~`";
 ///     }
 /// }
 ///
-/// let tokenizer = Tokenizer::new("10 + 10".to_owned());
+/// let tokenizer = Tokenizer::new("10 + 10");
 /// let mut tokens = tokenizer.tokenize().unwrap();
-/// let _ = tokens.pop(); // remove EndMarker
+/// let _ = tokens.pop(); // remove Token::EndMarker
+/// let _ = tokens.pop(); // remove Token::NewLine
 ///
 /// let binexp = BinaryExp::new(
 ///     tokens.pop().unwrap(),
@@ -56,9 +56,9 @@ pub const OPERATORS: &str = "=+-*/%&|<>!^:;.,()[]{}@$?~`";
 /// ```
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
-    /// Indicates the end of the program.
+    /// Indicates the end of the text.
     EndMarker,
-    /// A name token, such as a function or variable name.
+    /// A name token, such as a function or variable or special name.
     Name(String),
     /// A number token, such as a literal integer or floating-point number.
     Number(String),
@@ -77,12 +77,16 @@ pub enum Token {
     /// A token indicating a new line, for compatibility with the original tokenizer.
     NL,
 
-    /// not yet supported!
+    /// not yet supported,
+    /// i will be gratefull for your help in implementation
     FStringStart(String),
+    /// not yet supported,
+    /// i will be gratefull for your help in implementation
     FStringMiddle(String),
+    /// not yet supported,
+    /// i will be gratefull for your help in implementation
     FStringEnd(String),
 }
-
 
 /// An enumeration of possible errors that can occur during tokenization.
 ///
@@ -91,13 +95,13 @@ pub enum Token {
 /// ```
 /// use tokenizer_py::{Tokenizer, Token, TokenizerError};
 ///
-/// let tokenizer = Tokenizer::new("1..1".to_string());
+/// let tokenizer = Tokenizer::new("1..1");
 /// if let Err(err) = tokenizer.tokenize() {
-///     assert_eq!(TokenizerError::Number("1..1".to_owned()), err);
+///     assert_eq!(TokenizerError("Invalid number: \"1..1\"".to_owned()), err);
 /// }
 /// ```
 #[derive(PartialEq, Eq)]
-pub struct TokenizerError(String);
+pub struct TokenizerError(pub String);
 
 impl Debug for TokenizerError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -124,21 +128,21 @@ impl Error for TokenizerError {
 /// ```
 /// use tokenizer_py::{Tokenizer, Token};
 ///
-/// let tokenizer = Tokenizer::new("hello world".to_string());
+/// let tokenizer = Tokenizer::new("hello world");
 /// let tokens = tokenizer.tokenize().unwrap();
 /// assert_eq!(tokens, vec![
 ///     Token::Name("hello".to_string()),
 ///     Token::Name("world".to_string()),
+///     Token::NewLine,
 ///     Token::EndMarker,
 /// ]);
 /// ```
 #[derive(Debug, PartialEq, Eq)]
-pub struct Tokenizer {
-    text: String,
+pub struct Tokenizer<'a> {
+    text: &'a str,
 }
 
-
-impl Tokenizer {
+impl Tokenizer<'_> {
     /// Creates a new tokenizer that will tokenize the given text.
     ///
     /// # Examples
@@ -146,10 +150,10 @@ impl Tokenizer {
     /// ```
     /// use tokenizer_py::Tokenizer;
     ///
-    /// let tokenizer = Tokenizer::new("hello world".to_string());
+    /// let tokenizer = Tokenizer::new("hello world");
     /// ```
     #[inline]
-    pub const fn new(text: String) -> Tokenizer {
+    pub const fn new(text: &str) -> Tokenizer {
         Tokenizer { text }
     }
     /// Tokenizes the text that was provided to the tokenizer's constructor.
@@ -159,24 +163,25 @@ impl Tokenizer {
     /// ```
     /// use tokenizer_py::{Token, Tokenizer};
     ///
-    /// let tokenizer = Tokenizer::new("hello\nworld".to_string());
+    /// let tokenizer = Tokenizer::new("hello\nworld");
     /// let tokens = tokenizer.tokenize().unwrap();
     ///
     /// assert_eq!(tokens, vec![
     ///     Token::Name("hello".to_string()),
     ///     Token::NewLine,
     ///     Token::Name("world".to_string()),
+    ///     Token::NewLine,
     ///     Token::EndMarker,
     /// ]);
     /// ```
     pub fn tokenize(&self) -> Result<Vec<Token>, TokenizerError> {
         let mut tokens: Vec<Token> = Vec::new();
-        let mut iter = self.text.chars().peekable();
+        let mut text = self.text.to_owned();
+        text.push('\n');
+        let mut iter: Peekable<Chars> = text.chars().peekable();
         let mut is_start_of_string = false;
-        let mut ind_count: usize = 0;
-        let mut ind_stack: Vec<usize> = Vec::new();
-        ind_stack.push(0);
-        while let Some( c) = iter.peek() {
+        let mut ind_stack: Vec<usize> = vec![0];
+        while let Some(c) = iter.peek() {
             match *c {
                 'r' | 'f' | 'b' | 'u' => {
                     let c = iter.next();
@@ -188,38 +193,44 @@ impl Tokenizer {
                 }
                 '\'' | '"' => tokens.push(Token::String(self.collect_string(&mut iter, None)?)),
                 '0'..='9' => tokens.push(Token::Number(self.collect_number(&mut iter)?)),
-                ' ' | '\t' => {
-                    if is_start_of_string {
-                        let new_indent = self.collect_indent(&mut iter)?;
-                        tokens.push(Token::Indent());
-                        ind_count += 1;
-                    } else {
-                        iter.next();
-                    }
-                }
                 '\n' => {
                     if is_start_of_string {
                         tokens.push(Token::NL);
                     } else {
                         tokens.push(Token::NewLine);
                     }
-                    
+                    iter.next();
+                    let new_ind = self.collect_indent(&mut iter)?;
+                    let last_ind = *ind_stack.last().unwrap();
+                    if new_ind.len() > last_ind {
+                        ind_stack.push(new_ind.len());
+                        tokens.push(Token::Indent(new_ind.clone()));
+                    }
+                    while new_ind.len() < *ind_stack.last().unwrap() {
+                        ind_stack.pop();
+                        tokens.push(Token::Dedent);
+                    }
                     is_start_of_string = true;
                     continue;
                 }
-                '\r' => { iter.next(); }
-                '#' => {
-                    tokens.push(Token::Comment(self.collect_comment(&mut iter)))
-                }
+                '#' => tokens.push(Token::Comment(self.collect_comment(&mut iter))),
                 c => {
                     if c.is_alphabetic() || c == '_' {
                         tokens.push(Token::Name(self.collect_name(&mut iter, None)));
                     } else if OPERATORS.contains(c) {
                         tokens.push(Token::OP(self.collect_op(&mut iter)?));
+                    } else if c.is_whitespace() {
+                        iter.next();
+                    } else {
+                        return Err(TokenizerError(format!("Unexpected char: {:?}", c)));
                     }
                 }
             };
             is_start_of_string = false;
+        }
+        while *ind_stack.last().unwrap() > 0 {
+            ind_stack.pop();
+            tokens.push(Token::Dedent);
         }
         tokens.push(Token::EndMarker);
         Ok(tokens)
@@ -240,7 +251,7 @@ impl Tokenizer {
     /// private method to collect number as Python tokenizer
     fn collect_number(&self, line: &mut Peekable<Chars>) -> Result<String, TokenizerError> {
         let mut number = String::new();
-        while let Some(c) = line.next_if(|c| c.is_ascii_digit() || "_.".contains(*c)) {
+        while let Some(c) = line.next_if(|c| matches!(c, '0'..='9' | '_' | '.')) {
             number.push(c);
         }
         if number.chars().filter(|c| c == &'.').count() > 1 {
@@ -251,9 +262,10 @@ impl Tokenizer {
     /// private method to collect names as Python tokenizer
     fn collect_name(&self, line: &mut Peekable<Chars>, c: Option<char>) -> String {
         let mut name = String::new();
-        if let Some(c) = c { name.push(c); }
-        while let Some(c) = line.next_if(
-            |c| !c.is_whitespace() && !OPERATORS.contains(*c)) {
+        if let Some(c) = c {
+            name.push(c);
+        }
+        while let Some(c) = line.next_if(|c| !c.is_whitespace() && !OPERATORS.contains(*c)) {
             name.push(c);
         }
         name
@@ -273,6 +285,10 @@ impl Tokenizer {
                 Some('=') => {
                     line.next();
                     "-=".to_owned()
+                }
+                Some('>') => {
+                    line.next();
+                    "->".to_owned()
                 }
                 _ => "-".to_owned(),
             },
@@ -316,7 +332,7 @@ impl Tokenizer {
                     "%=".to_owned()
                 }
                 _ => "%".to_owned(),
-            }
+            },
             '&' => match line.peek() {
                 Some('=') => {
                     line.next();
@@ -330,7 +346,7 @@ impl Tokenizer {
                     "|=".to_owned()
                 }
                 _ => "|".to_owned(),
-            }
+            },
             '<' => match line.peek() {
                 Some('=') => {
                     line.next();
@@ -346,6 +362,7 @@ impl Tokenizer {
                         _ => "<<".to_owned(),
                     }
                 }
+                Some('>') => "<>".to_owned(),
                 _ => "<".to_owned(),
             },
             '>' => match line.peek() {
@@ -378,7 +395,7 @@ impl Tokenizer {
                     "^=".to_owned()
                 }
                 _ => "^".to_owned(),
-            }
+            },
             ':' => match line.peek() {
                 Some('=') => {
                     line.next();
@@ -401,18 +418,20 @@ impl Tokenizer {
                     "@=".to_owned()
                 }
                 _ => "@".to_owned(),
-            }
+            },
             '$' => "$".to_owned(),
             '?' => "?".to_owned(),
             '~' => "~".to_owned(),
             '`' => "`".to_owned(),
-            op => return Err(TokenizerError(op.to_string()))
+            op => return Err(TokenizerError(format!("Invalid operator: {:?}", op))),
         })
     }
     /// private method to collect string as Python tokenizer
-    fn collect_string(&self,
-                      line: &mut Peekable<Chars>,
-                      c: Option<char>) -> Result<String, TokenizerError> {
+    fn collect_string(
+        &self,
+        line: &mut Peekable<Chars>,
+        c: Option<char>,
+    ) -> Result<String, TokenizerError> {
         let mut string = String::new();
         let quot = line.next().unwrap();
         if let Some(ref c) = c {
@@ -441,9 +460,13 @@ impl Tokenizer {
                             '\n' => {
                                 continue;
                             }
-                            c => return Err(
-                                TokenizerError(
-                                    format!("unexpected escape sequence: '\\{}'", c)), ),
+                            c => {
+                                let msg = format!("\\{}", c);
+                                return Err(TokenizerError(format!(
+                                    "Unexpected escape sequence: {:?}",
+                                    msg
+                                )));
+                            }
                         }
                     } else {
                         return Err(TokenizerError("Unexpected EndOfFile".to_owned()));
