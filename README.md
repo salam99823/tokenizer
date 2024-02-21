@@ -3,8 +3,8 @@ Python-like Tokenizer in Rust
 
 [![Static Badge](https://img.shields.io/badge/-salam99823%2Ftokenizer-blue?label=github)](https://github.com/salam99823/tokenizer)
 [![Crates.io Version](https://img.shields.io/crates/v/tokenizer_py)](https://crates.io/crates/tokenizer_py)
-[![Crates.io MSRV (version)](https://img.shields.io/crates/msrv/tokenizer_py/0.1.3?logo=rust)](https://rust-lang.github.io/rfcs/2495-min-rust-version.html)
-[![docs.rs (with version)](https://img.shields.io/docsrs/tokenizer_py/0.1.3?logo=docs.rs)](https://docs.rs/tokenizer_py)
+[![Crates.io MSRV (version)](https://img.shields.io/crates/msrv/tokenizer_py/latest?logo=rust)](https://rust-lang.github.io/rfcs/2495-min-rust-version.html)
+[![docs.rs (with version)](https://img.shields.io/docsrs/tokenizer_py/latest?logo=docs.rs)](https://docs.rs/tokenizer_py)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/salam99823/tokenizer/rust.yml)](https://github.com/salam99823/tokenizer/actions/workflows/rust.yml)
 ![Crates.io License](https://img.shields.io/crates/l/tokenizer_py)
 
@@ -66,24 +66,24 @@ Add this to your `Cargo.toml`:
 tokenizer_py = "0.1.3"
 ```
 
-[`Token::Name`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#variant.Name
+[`Token::Name`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#variant.Name
 
-[`Token::Number`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#variant.Number
+[`Token::Number`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#variant.Number
 
-[`Token::String`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#variant.String
+[`Token::String`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#variant.String
 
-[`Token::OP`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#variant.OP
+[`Token::OP`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#variant.OP
 
-[`Token::Indent`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#variant.Indent
+[`Token::Indent`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#variant.Indent
 
-[`Token::Dedent`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#variant.Dedent
+[`Token::Dedent`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#variant.Dedent
 
-[`Token::Comment`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#variant.Comment
+[`Token::Comment`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#variant.Comment
 
-[`Token::NewLine`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#variant.NewLine
+[`Token::NewLine`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#variant.NewLine
 
-[`Token::NL`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#variant.NL
+[`Token::NL`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#variant.NL
 
-[`Token::EndMarker`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#variant.EndMarker
+[`Token::EndMarker`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#variant.EndMarker
 
-[`Token`]: https://docs.rs/tokenizer_py/0.1.3/tokenizer_py/enum.Token.html#
+[`Token`]: https://docs.rs/tokenizer_py/latest/tokenizer_py/enum.Token.html#
