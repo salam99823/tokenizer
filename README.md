@@ -8,7 +8,6 @@ Python-like Tokenizer in Rust
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/salam99823/tokenizer/rust.yml)](https://github.com/salam99823/tokenizer/actions/workflows/rust.yml)
 ![Crates.io License](https://img.shields.io/crates/l/tokenizer_py)
 
-
 This project implements a Python-like tokenizer in Rust. It can tokenize a string into a sequence of tokens, which are
 represented by the [`Token`] enum. The supported tokens are:
 
@@ -62,7 +61,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tokenizer_py = "0.1.1"
+tokenizer_py = "0.1.2"
 ```
 
 ## Error Handling
@@ -95,19 +94,35 @@ Err(TokenizerError::String(string)) => {
 }
 }
 ```
+
 [`TokenizerError::Operator`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.TokenizerError.html#variant.Operator
+
 [`TokenizerError::Number`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.TokenizerError.html#variant.Number
+
 [`TokenizerError::Indent`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.TokenizerError.html#variant.Indent
+
 [`TokenizerError::String`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.TokenizerError.html#variant.String
+
 [`Token::Name`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#variant.Name
+
 [`Token::Number`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#variant.Number
+
 [`Token::String`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#variant.String
+
 [`Token::OP`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#variant.OP
+
 [`Token::Indent`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#variant.Indent
+
 [`Token::Dedent`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#variant.Dedent
+
 [`Token::Comment`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#variant.Comment
+
 [`Token::NewLine`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#variant.NewLine
+
 [`Token::NL`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#variant.NL
+
 [`Token::EndMarker`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#variant.EndMarker
+
 [`Token`]: https://docs.rs/tokenizer_py/0.1.1/tokenizer_py/enum.Token.html#
+
 [`Result`]: https://doc.rust-lang.org/core/result/enum.Result.html
