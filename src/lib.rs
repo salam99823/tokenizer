@@ -530,7 +530,6 @@ mod tests {
             "hello\n'world'\n2 + 2\nfor i in range(10):\n    print(i)\npass"
                 .to_owned()
         );
-        println!("hello\n'world'\n2 + 2\nfor i in range(10):\n    print(i)\npass\n");
         let tokens = tokenizer.tokenize().unwrap();
         let expects = vec![
             Token::Name("hello".to_owned()),
@@ -555,7 +554,9 @@ mod tests {
             Token::OP("(".to_owned()),
             Token::Name("i".to_owned()),
             Token::OP(")".to_owned()),
+            Token::NewLine,
             Token::Dedent,
+            Token::Name("pass".to_owned()),
             Token::EndMarker,
         ];
         for (actual, expect) in tokens.iter().zip(expects.iter()) {
