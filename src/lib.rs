@@ -440,36 +440,41 @@ impl Tokenizer<'_> {
                 c => return Err(TokenizerError(format!("Invalid prefix: {:?}", c))),
             }
         }
+
         string.push(quot);
         while let Some(c) = line.peek() {
             match c {
                 '\\' => {
                     line.next();
-                    if let Some(c) = &line.next() {
-                        match *c {
-                            '\\' => string.push('\\'),
-                            '"' => string.push('"'),
-                            '\'' => string.push('\''),
-                            'n' => string.push('\n'),
-                            'r' => string.push('\r'),
-                            't' => string.push('\t'),
-                            'b' => string.push('\x08'),
-                            'f' => string.push('\x0C'),
-                            'v' => string.push('\x0D'),
-                            'a' => string.push('\x07'),
-                            '\n' => {
-                                continue;
+                    if !string.starts_with('r') {
+                        if let Some(c) = &line.next() {
+                            match *c {
+                                '\\' => string.push('\\'),
+                                '"' => string.push('"'),
+                                '\'' => string.push('\''),
+                                'n' => string.push('\n'),
+                                'r' => string.push('\r'),
+                                't' => string.push('\t'),
+                                'b' => string.push('\x08'),
+                                'f' => string.push('\x0C'),
+                                'v' => string.push('\x0D'),
+                                'a' => string.push('\x07'),
+                                '\n' => {
+                                    continue;
+                                }
+                                c => {
+                                    let msg = format!("\\{}", c);
+                                    return Err(TokenizerError(format!(
+                                        "Unexpected escape sequence: {:?}",
+                                        msg
+                                    )));
+                                }
                             }
-                            c => {
-                                let msg = format!("\\{}", c);
-                                return Err(TokenizerError(format!(
-                                    "Unexpected escape sequence: {:?}",
-                                    msg
-                                )));
-                            }
+                        } else {
+                            return Err(TokenizerError("Unexpected EndOfFile".to_owned()));
                         }
                     } else {
-                        return Err(TokenizerError("Unexpected EndOfFile".to_owned()));
+                        string.push('\\');
                     }
                 }
                 '\n' => return Err(TokenizerError(format!("{}\n", string))),
