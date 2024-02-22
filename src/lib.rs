@@ -44,20 +44,30 @@ pub type Result<T> = std::result::Result<T, TokenizeError>;
 pub fn tokenize(text: impl Display) -> Result<Vec<Token>> {
     let mut tokens: Vec<Token> = Vec::new();
     let text = format!("{}\n", text);
+    // Add a "line break" to be similar to the original tokenizer
+
     let mut iter = ModPeekable::new(text.chars().peekable());
+    // A wrapper for Peekable<Chars>
+    // having a tuple: (usize, usize)
+    // to specify a position in the text
+
     let mut ind_stack: Vec<usize> = vec![0];
+    // A stack of indentation sizes,
+    // the initial zero will be retained until the end of the function
+
     while let Some(c) = iter.peek() {
         match *c {
             'r' | 'f' | 'b' | 'u' => {
                 let c = iter.next();
-                if let Some('\'' | '"') = iter.peek() {
-                    if let Some('f') = c {
-                        collect_fstring(&mut iter, &mut tokens)?;
-                    } else {
-                        tokens.push(Token::String(collect_string(&mut iter, c)?));
+                // collecting a prefix
+                match (c, iter.peek()) {
+                    (Some('f'), Some('\'' | '"')) => collect_fstring(&mut iter, &mut tokens)?,
+                    (Some('r' | 'b' | 'u'), Some('\'' | '"')) => {
+                        tokens.push(Token::String(collect_string(&mut iter, c)?))
                     }
-                } else {
-                    tokens.push(Token::Name(collect_name(&mut iter, c)));
+                    (c, _) => {
+                        tokens.push(Token::Name(collect_name(&mut iter, c)));
+                    }
                 }
             }
             '\'' | '"' => tokens.push(Token::String(collect_string(&mut iter, None)?)),
@@ -83,19 +93,18 @@ pub fn tokenize(text: impl Display) -> Result<Vec<Token>> {
                 continue;
             }
             '#' => tokens.push(Token::Comment(collect_comment(&mut iter))),
+            c if OPERATORS.contains(c) => tokens.push(Token::OP(collect_operator(&mut iter)?)),
+            c if c.is_alphabetic() || c == '_' => {
+                tokens.push(Token::Name(collect_name(&mut iter, None)))
+            }
+            c if c.is_whitespace() => {
+                iter.next();
+            }
             c => {
-                if c.is_alphabetic() || c == '_' {
-                    tokens.push(Token::Name(collect_name(&mut iter, None)));
-                } else if OPERATORS.contains(c) {
-                    tokens.push(Token::OP(collect_operator(&mut iter)?));
-                } else if c.is_whitespace() {
-                    iter.next();
-                } else {
-                    return Err(TokenizeError::Char(
-                        format!("Unexpected char: {:?}", c),
-                        *iter.pos(),
-                    ));
-                }
+                return Err(TokenizeError::Char(
+                    format!("Unexpected char: {:?}", c),
+                    *iter.pos(),
+                ))
             }
         };
     }
