@@ -3,7 +3,13 @@ use crate::{privatestructs::ModPeekable, Result, TokenizeError};
 /// Method to collect operators as Python tokenizer
 pub fn collect_operator(iter: &mut ModPeekable) -> Result<String> {
     Ok(match iter.next().unwrap() {
-        '=' => "=".to_owned(),
+        '=' => match iter.peek() {
+            Some('=') => {
+                iter.next();
+                "==".to_owned()
+            }
+            _ => "=".to_owned(),
+        },
         '+' => match iter.peek() {
             Some('=') => {
                 iter.next();
