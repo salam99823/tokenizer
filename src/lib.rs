@@ -474,7 +474,7 @@ impl Tokenizer<'_> {
                             return Err(TokenizerError("Unexpected EndOfFile".to_owned()));
                         }
                     } else {
-                        string.push('\n');
+                        string.push('\\');
                     }
                 }
                 '\n' => return Err(TokenizerError(format!("{}\n", string))),
