@@ -2,8 +2,7 @@ use super::*;
 
 #[test]
 fn test_tokenize_1_level_of_indent() {
-    let tokenizer = Tokenizer::new("for i in range(10):\n    print(i)");
-    let actual_tokens = tokenizer.tokenize().unwrap();
+    let actual_tokens = tokenize("for i in range(10):\n    print(i)").unwrap();
     use Token::*;
     let expected_tokens = vec![
         Name("for".to_owned()),
@@ -26,10 +25,10 @@ fn test_tokenize_1_level_of_indent() {
     ];
     assert_eq!(actual_tokens, expected_tokens);
 }
+
 #[test]
 fn test_tokenize_different_indent_levels() {
-    let tokenizer = Tokenizer::new("level_1\n  level_2\n    level_3");
-    let actual_tokens = tokenizer.tokenize().unwrap();
+    let actual_tokens = tokenize("level_1\n  level_2\n    level_3").unwrap();
     use Token::*;
     let expected_tokens = vec![
         Name("level_1".to_owned()),
@@ -46,17 +45,17 @@ fn test_tokenize_different_indent_levels() {
     ];
     assert_eq!(actual_tokens, expected_tokens);
 }
+
 #[test]
 fn test_tokenize_different_strings() {
-    let tokenizer =
-        Tokenizer::new("'base 1'\"base 2\"r'raw 1'r\"raw 2\"b'byte 1'b\"byte 2\"");
-    let actual_tokens = tokenizer.tokenize().unwrap();
+    let actual_tokens =
+        tokenize("'base 1'\"base 2\"r'raw 1'r\"raw \\n 2\"b'byte 1'b\"byte 2\"").unwrap();
     use Token::*;
     let expected_tokens = vec![
         String("'base 1'".to_owned()),
         String("\"base 2\"".to_owned()),
         String("r'raw 1'".to_owned()),
-        String("r\"raw 2\"".to_owned()),
+        String("r\"raw \\n 2\"".to_owned()),
         String("b'byte 1'".to_owned()),
         String("b\"byte 2\"".to_owned()),
         NewLine,
@@ -64,19 +63,76 @@ fn test_tokenize_different_strings() {
     ];
     assert_eq!(actual_tokens, expected_tokens);
 }
+
 #[test]
 fn test_tokenize_numbers() {
-    let tokenizer =
-        Tokenizer::new("'base 1'\"base 2\"r'raw 1'r\"raw 2\"b'byte 1'b\"byte 2\"");
-    let actual_tokens = tokenizer.tokenize().unwrap();
+    let actual_tokens = tokenize("1234567890 1.234 0.67890 1j 0.2e-2").unwrap();
     use Token::*;
     let expected_tokens = vec![
-        String("'base 1'".to_owned()),
-        String("\"base 2\"".to_owned()),
-        String("r'raw 1'".to_owned()),
-        String("r\"raw 2\"".to_owned()),
-        String("b'byte 1'".to_owned()),
-        String("b\"byte 2\"".to_owned()),
+        Number("1234567890".to_owned()),
+        Number("1.234".to_owned()),
+        Number("0.67890".to_owned()),
+        Number("1j".to_owned()),
+        Number("0.2e-2".to_owned()),
+        NewLine,
+        EndMarker,
+    ];
+    assert_eq!(actual_tokens, expected_tokens);
+}
+
+#[test]
+fn test_tokenize_fstring() {
+    let actual_tokens = tokenize("f\"midle {2 + 2 = ?}\"").unwrap();
+    use Token::*;
+    let expected_tokens = vec![
+        FStringStart("f\"".to_owned()),
+        FStringMiddle("midle ".to_owned()),
+        OP("{".to_owned()),
+        Number("2".to_owned()),
+        OP("+".to_owned()),
+        Number("2".to_owned()),
+        OP("=".to_owned()),
+        OP("?".to_owned()),
+        OP("}".to_owned()),
+        FStringEnd("\"".to_owned()),
+        NewLine,
+        EndMarker,
+    ];
+    assert_eq!(actual_tokens, expected_tokens);
+}
+
+#[test]
+fn test_tokenize_operators() {
+    let actual_tokens = tokenize(OPERATORS).unwrap();
+    use Token::*;
+    let expected_tokens = vec![
+        OP("=".to_owned()),
+        OP("+".to_owned()),
+        OP("-".to_owned()),
+        OP("*".to_owned()),
+        OP("/".to_owned()),
+        OP("%".to_owned()),
+        OP("&".to_owned()),
+        OP("|".to_owned()),
+        OP("<>".to_owned()),
+        OP(">".to_owned()),
+        OP("!".to_owned()),
+        OP("^".to_owned()),
+        OP(":".to_owned()),
+        OP(";".to_owned()),
+        OP(".".to_owned()),
+        OP(",".to_owned()),
+        OP("(".to_owned()),
+        OP(")".to_owned()),
+        OP("[".to_owned()),
+        OP("]".to_owned()),
+        OP("{".to_owned()),
+        OP("}".to_owned()),
+        OP("@".to_owned()),
+        OP("$".to_owned()),
+        OP("?".to_owned()),
+        OP("~".to_owned()),
+        OP("`".to_owned()),
         NewLine,
         EndMarker,
     ];
