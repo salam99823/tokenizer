@@ -10,7 +10,7 @@ use std::fmt::{Debug, Display, Formatter};
 ///
 ///
 /// assert_eq!(
-///     Err(TokenizeError::Number("Invalid decimal literal: \"1_.\"".to_owned(), (0, 2))), 
+///     Err(TokenizeError::Number("Invalid decimal literal".to_owned(), (1, 3))), 
 ///     tokenize("1_.1")
 /// );
 /// ```
@@ -54,6 +54,7 @@ impl Debug for TokenizeError {
 }
 
 impl Display for TokenizeError {
+    #[inline]
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }

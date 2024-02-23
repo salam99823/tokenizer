@@ -1,26 +1,21 @@
-use crate::{privatestructs::ModPeekable, Result, TokenizeError};
+use crate::{privat::ModPeekable, Result, TokenizeError};
 
 /// Method to collect number as Python tokenizer
-pub fn collect_number(iter: &mut ModPeekable) -> Result<String> {
+pub fn collect_number(iter: &mut ModPeekable, digit: Option<char>) -> Result<String> {
     let mut number = String::new();
+    if let Some(d) = digit {
+        number.push(d)
+    }
     while let Some(c) = iter.peek() {
         match c {
             '0'..='9' => {
-                number.push(*c);
-
-                iter.next();
+                number.push(iter.next().unwrap());
             }
             '_' => {
                 iter.next();
                 match iter.peek() {
-                    Some('0'..='9' | '_' | 'e' | 'j') => number.push('_'),
-                    Some(c) => {
-                        return Err(TokenizeError::Number(
-                            format!("Invalid decimal literal: {:?}", format!("{}_{}", number, c)),
-                            *iter.pos(),
-                        ))
-                    }
-                    None => {
+                    Some('0'..='9') => number.push('_'),
+                    _ => {
                         return Err(TokenizeError::Number(
                             "Invalid decimal literal".to_owned(),
                             *iter.pos(),
@@ -28,34 +23,33 @@ pub fn collect_number(iter: &mut ModPeekable) -> Result<String> {
                     }
                 }
             }
-            '.' => {
-                if number.contains('.') {
-                    break;
-                } else {
-                    iter.next();
-                    number.push('.');
+            '.' if !number.contains('.') => {
+                number.push(iter.next().unwrap());
+                match iter.peek() {
+                    Some('0'..='9') => continue,
+                    _ => break,
                 }
             }
             'j' => {
-                iter.next();
-                number.push('j');
+                number.push(iter.next().unwrap());
                 break;
             }
-            'e' => {
-                if !number.contains('.') {
-                    break;
-                } else {
-                    iter.next();
-                    match iter.peek() {
-                        Some('-' | '+') => {
-                            number.push('e');
-                            number.push(iter.next().unwrap())
-                        }
-                        _ => {
-                            iter.next();
-                            number.push('e');
+            'e' if !number.contains('e') => {
+                match iter.clone().nth(1) {
+                    Some('-' | '+') => {
+                        number.push(iter.next().unwrap());
+                        number.push(iter.next().unwrap());
+                        match iter.peek() {
+                            Some('0'..='9') => continue,
+                            _ => {
+                                return Err(TokenizeError::Number(
+                                    "Invalid decimal literal".to_owned(),
+                                    *iter.pos(),
+                                ))
+                            }
                         }
                     }
+                    _ => break,
                 }
             }
             _ => break,

@@ -9,7 +9,7 @@ pub struct ModPeekable<'a> {
 impl<'a> ModPeekable<'a> {
     #[inline]
     pub const fn new(iter: Peekable<Chars<'a>>) -> Self {
-        ModPeekable { iter, pos: (0, 0) }
+        ModPeekable { iter, pos: (1, 1) }
     }
     #[inline]
     pub fn pos(&self) -> &(usize, usize) {
@@ -19,11 +19,17 @@ impl<'a> ModPeekable<'a> {
     pub fn peek(&mut self) -> Option<&char> {
         self.iter.peek()
     }
+    #[inline]
     pub fn next_if(&mut self, func: impl FnOnce(&char) -> bool) -> Option<char> {
-        match self.iter.next_if(func) {
+        let c = self.iter.next_if(func);
+        self.chek_br(c)
+    }
+    #[inline]
+    fn chek_br(&mut self, c: Option<char>) -> Option<char> {
+        match c {
             Some('\n') => {
                 self.pos.0 += 1;
-                self.pos.1 = 0;
+                self.pos.1 = 1;
                 Some('\n')
             }
             other => {
@@ -32,22 +38,27 @@ impl<'a> ModPeekable<'a> {
             }
         }
     }
+    #[inline]
+    pub fn is_start_of_line(&self) -> bool {
+        self.pos.1 == 1
+    }
 }
 
 impl Iterator for ModPeekable<'_> {
     type Item = char;
-
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        match self.iter.next() {
-            Some('\n') => {
-                self.pos.0 += 1;
-                self.pos.1 = 0;
-                Some('\n')
-            }
-            other => {
-                self.pos.1 += 1;
-                other
-            }
+        let c = self.iter.next();
+        self.chek_br(c)
+    }
+}
+
+impl Clone for ModPeekable<'_> {
+    #[inline]
+    fn clone(&self) -> Self {
+        ModPeekable {
+            iter: self.iter.clone(),
+            pos: self.pos,
         }
     }
 }

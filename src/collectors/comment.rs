@@ -1,4 +1,4 @@
-use crate::privatestructs::ModPeekable;
+use crate::privat::ModPeekable;
 
 /// Method to collect comment as Python tokenizer
 pub fn collect_comment(iter: &mut ModPeekable) -> String {

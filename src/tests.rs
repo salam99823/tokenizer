@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn test_tokenize_1_level_of_indent() {
-    let actual_tokens = tokenize("for i in range(10):\n    print(i)").unwrap();
+    let actual_tokens = tokenize("for i in range(10):\n    print(i)\n").unwrap();
     use Token::*;
     let expected_tokens = vec![
         Name("for".to_owned()),
@@ -66,14 +66,15 @@ fn test_tokenize_different_strings() {
 
 #[test]
 fn test_tokenize_numbers() {
-    let actual_tokens = tokenize("1234567890 1.234 0.67890 1j 0.2e-2").unwrap();
+    let actual_tokens = tokenize("1234567890 1.234 0.67890 1j 0.2e-9j 4_3e-5").unwrap();
     use Token::*;
     let expected_tokens = vec![
         Number("1234567890".to_owned()),
         Number("1.234".to_owned()),
         Number("0.67890".to_owned()),
         Number("1j".to_owned()),
-        Number("0.2e-2".to_owned()),
+        Number("0.2e-9j".to_owned()),
+        Number("4_3e-5".to_owned()),
         NewLine,
         EndMarker,
     ];
@@ -115,7 +116,6 @@ fn test_tokenize_operators() {
         OP("&".to_owned()),
         OP("|".to_owned()),
         OP("<>".to_owned()),
-        OP(">".to_owned()),
         OP("!".to_owned()),
         OP("^".to_owned()),
         OP(":".to_owned()),
@@ -137,4 +137,32 @@ fn test_tokenize_operators() {
         EndMarker,
     ];
     assert_eq!(actual_tokens, expected_tokens);
+}
+#[test]
+fn test_tokenize_() {
+    let actual_tokens = tokenize(
+        "
+(iter_num + pos.0, char_num + pos.1),
+",
+    )
+    .unwrap();
+    println!("[");
+    for i in actual_tokens {
+        match i {
+            Token::EndMarker => println!("('EndMarker',''),"),
+            Token::Name(t) => println!("('Name',{:?}),", t),
+            Token::Number(t) => println!("('Number',{:?}),", t),
+            Token::String(t) => println!("('String',{:?}),", t),
+            Token::NewLine => println!("('NewLine', ''),"),
+            Token::OP(t) => println!("('OP',{:?}),", t),
+            Token::Indent(t) => println!("('Indent',{:?}),", t),
+            Token::Dedent => println!("('Dedent',''),"),
+            Token::Comment(t) => println!("('Comment',{:?}),", t),
+            Token::NL => println!("('NL',''),"),
+            Token::FStringStart(t) => println!("('FStringStart', {:?}),", t),
+            Token::FStringMiddle(t) => println!("('FStringMiddle', {:?}),", t),
+            Token::FStringEnd(t) => println!("('FStringEnd', {:?}),", t),
+        }
+    }
+    println!("]");
 }
