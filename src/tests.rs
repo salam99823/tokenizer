@@ -138,3 +138,31 @@ fn test_tokenize_operators() {
     ];
     assert_eq!(actual_tokens, expected_tokens);
 }
+#[test]
+fn test_tokenize_() {
+    let actual_tokens = tokenize(
+        "
+(iter_num + pos.0, char_num + pos.1),
+",
+    )
+    .unwrap();
+    println!("[");
+    for i in actual_tokens {
+        match i {
+            Token::EndMarker => println!("('EndMarker',''),"),
+            Token::Name(t) => println!("('Name',{:?}),", t),
+            Token::Number(t) => println!("('Number',{:?}),", t),
+            Token::String(t) => println!("('String',{:?}),", t),
+            Token::NewLine => println!("('NewLine', ''),"),
+            Token::OP(t) => println!("('OP',{:?}),", t),
+            Token::Indent(t) => println!("('Indent',{:?}),", t),
+            Token::Dedent => println!("('Dedent',''),"),
+            Token::Comment(t) => println!("('Comment',{:?}),", t),
+            Token::NL => println!("('NL',''),"),
+            Token::FStringStart(t) => println!("('FStringStart', {:?}),", t),
+            Token::FStringMiddle(t) => println!("('FStringMiddle', {:?}),", t),
+            Token::FStringEnd(t) => println!("('FStringEnd', {:?}),", t),
+        }
+    }
+    println!("]");
+}

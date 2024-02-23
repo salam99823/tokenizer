@@ -1,4 +1,4 @@
-use crate::{privatestructs::ModPeekable, tokenize, Result, Token, TokenizeError};
+use crate::{privat::ModPeekable, tokenize, Result, Token, TokenizeError};
 
 pub fn collect_fstring(iter: &mut ModPeekable, tokens: &mut Vec<Token>) -> Result<()> {
     let quot = iter.next().unwrap();

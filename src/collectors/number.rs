@@ -1,8 +1,11 @@
-use crate::{privatestructs::ModPeekable, Result, TokenizeError};
+use crate::{privat::ModPeekable, Result, TokenizeError};
 
 /// Method to collect number as Python tokenizer
-pub fn collect_number(iter: &mut ModPeekable) -> Result<String> {
+pub fn collect_number(iter: &mut ModPeekable, digit: Option<char>) -> Result<String> {
     let mut number = String::new();
+    if let Some(d) = digit {
+        number.push(d)
+    }
     while let Some(c) = iter.peek() {
         match c {
             '0'..='9' => {

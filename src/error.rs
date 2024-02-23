@@ -54,6 +54,7 @@ impl Debug for TokenizeError {
 }
 
 impl Display for TokenizeError {
+    #[inline]
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }

@@ -4,12 +4,12 @@ use collectors::{
 };
 pub use error::TokenizeError;
 
-use privatestructs::ModPeekable;
+use privat::ModPeekable;
 pub use token::Token;
 
 mod collectors;
 mod error;
-mod privatestructs;
+mod privat;
 
 #[cfg(test)]
 mod tests;
@@ -56,6 +56,7 @@ pub fn tokenize(text: impl ToString) -> Result<Vec<Token>> {
     let mut ind_stack: Vec<usize> = vec![0];
     // A stack of indentation sizes,
     // the initial zero will be retained until the end of the function
+    let mut opened = false;
 
     while let Some(c) = iter.peek() {
         match *c {
@@ -73,9 +74,9 @@ pub fn tokenize(text: impl ToString) -> Result<Vec<Token>> {
                 }
             }
             '\'' | '"' => tokens.push(Token::String(collect_string(&mut iter, None)?)),
-            '0'..='9' => tokens.push(Token::Number(collect_number(&mut iter)?)),
+            '0'..='9' => tokens.push(Token::Number(collect_number(&mut iter, None)?)),
             '\n' => {
-                if iter.is_start_of_line() {
+                if iter.is_start_of_line() || opened {
                     iter.next();
                     tokens.push(Token::NL);
                 } else {
@@ -94,7 +95,22 @@ pub fn tokenize(text: impl ToString) -> Result<Vec<Token>> {
                 }
             }
             '#' => tokens.push(Token::Comment(collect_comment(&mut iter))),
-            c if OPERATORS.contains(c) => tokens.push(Token::OP(collect_operator(&mut iter)?)),
+            c if OPERATORS.contains(c) => {
+                let operator = iter.next().unwrap();
+                match operator {
+                    '[' | '{' | '(' => opened = true,
+                    ']' | '}' | ')' => opened = false,
+                    '.' => match iter.peek() {
+                        Some('0'..='9') => {
+                            tokens.push(Token::Number(collect_number(&mut iter, Some(operator))?));
+                            continue;
+                        }
+                        _ => {}
+                    },
+                    _ => {}
+                }
+                tokens.push(Token::OP(collect_operator(&mut iter, operator)?));
+            }
             c if c.is_alphabetic() || c == '_' => {
                 tokens.push(Token::Name(collect_name(&mut iter, None)));
             }

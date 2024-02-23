@@ -1,15 +1,14 @@
-use crate::{privatestructs::ModPeekable, Result, TokenizeError, OPERATORS};
+use crate::{privat::ModPeekable, Result, TokenizeError, OPERATORS};
 
 /// Method to collect operators as Python tokenizer
-pub fn collect_operator(iter: &mut ModPeekable) -> Result<String> {
-    let cur = iter.next().unwrap();
-    if !OPERATORS.contains(cur) {
+pub fn collect_operator(iter: &mut ModPeekable, operator: char) -> Result<String> {
+    if !OPERATORS.contains(operator) {
         Err(TokenizeError::Operator(
-            format!("Invalid operator: {:?}", cur),
+            format!("Invalid operator: {:?}", operator),
             *iter.pos(),
         ))
     } else {
-        Ok(match (cur, iter.peek()) {
+        Ok(match (operator, iter.peek()) {
             (c, Some('=')) if "=+-*/%&|<>!^:@".contains(c) => {
                 iter.next();
                 format!("{}=", c)
