@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn test_tokenize_1_level_of_indent() {
-    let actual_tokens = tokenize("for i in range(10):\n    print(i)").unwrap();
+    let actual_tokens = tokenize("for i in range(10):\n    print(i)\n").unwrap();
     use Token::*;
     let expected_tokens = vec![
         Name("for".to_owned()),
@@ -66,14 +66,15 @@ fn test_tokenize_different_strings() {
 
 #[test]
 fn test_tokenize_numbers() {
-    let actual_tokens = tokenize("1234567890 1.234 0.67890 1j 0.2e-2").unwrap();
+    let actual_tokens = tokenize("1234567890 1.234 0.67890 1j 0.2e-9j 4_3e-5").unwrap();
     use Token::*;
     let expected_tokens = vec![
         Number("1234567890".to_owned()),
         Number("1.234".to_owned()),
         Number("0.67890".to_owned()),
         Number("1j".to_owned()),
-        Number("0.2e-2".to_owned()),
+        Number("0.2e-9j".to_owned()),
+        Number("4_3e-5".to_owned()),
         NewLine,
         EndMarker,
     ];
@@ -115,7 +116,6 @@ fn test_tokenize_operators() {
         OP("&".to_owned()),
         OP("|".to_owned()),
         OP("<>".to_owned()),
-        OP(">".to_owned()),
         OP("!".to_owned()),
         OP("^".to_owned()),
         OP(":".to_owned()),

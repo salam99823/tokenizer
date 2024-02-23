@@ -56,7 +56,7 @@ pub fn collect_string(iter: &mut ModPeekable, c: Option<char>) -> Result<String>
             }
             '\n' => {
                 return Err(TokenizeError::String(
-                    format!("Not cloused string: {:?}", string),
+                    "Not cloused string".to_owned(),
                     *iter.pos(),
                 ))
             }
@@ -75,7 +75,7 @@ pub fn collect_string(iter: &mut ModPeekable, c: Option<char>) -> Result<String>
     }
     if string.chars().filter(|c| *c == quot).count() < 2 {
         return Err(TokenizeError::String(
-            format!("Not cloused string: {:?}", string),
+            "Not cloused string".to_owned(),
             *iter.pos(),
         ));
     }
