@@ -4,7 +4,7 @@ use collectors::{
 };
 pub use error::TokenizeError;
 
-use privat::ModPeekable;
+use privat::PeekableCharTracker;
 pub use token::Token;
 
 mod collectors;
@@ -43,52 +43,54 @@ pub type Result<T> = std::result::Result<T, TokenizeError>;
 pub fn tokenize(text: impl ToString) -> Result<Vec<Token>> {
     let mut tokens: Vec<Token> = Vec::new();
     let mut text = text.to_string();
+
     if !text.ends_with('\n') {
         text.push('\n')
     }
-    // Add a "line break" to be similar to the original tokenizer
 
-    let mut iter = ModPeekable::new(text.chars().peekable());
+    let mut iter = PeekableCharTracker::new(text.chars().peekable());
     // A wrapper for Peekable<Chars>
     // having a tuple: (usize, usize)
     // to specify a position in the text
 
-    let mut ind_stack: Vec<usize> = vec![0];
+    let mut ind_stack = vec!["".to_owned()];
     // A stack of indentation sizes,
     // the initial zero will be retained until the end of the function
-    let mut opened = false;
+    let mut brackets_stack = Vec::new();
 
     while let Some(c) = iter.peek() {
         match *c {
-            'r' | 'f' | 'b' | 'u' => {
+            'r' | 'f' | 'b' | 'u' | 'R' | 'F' | 'B' | 'U' => {
                 let c = iter.next();
                 // collecting a prefix
                 match (c, iter.peek()) {
-                    (Some('f'), Some('\'' | '"')) => collect_fstring(&mut iter, &mut tokens)?,
-                    (Some('r' | 'b' | 'u'), Some('\'' | '"')) => {
-                        tokens.push(Token::String(collect_string(&mut iter, c)?))
+                    (Some('f' | 'F'), Some('\'' | '"')) => collect_fstring(&mut iter, &mut tokens, c.unwrap())?,
+                    (Some('r' | 'R' | 'b' | 'B' | 'u' | 'U'), Some('\'' | '"')) => {
+                        tokens.push(Token::String(collect_string(&mut iter, c)?));
                     }
                     (c, _) => {
                         tokens.push(Token::Name(collect_name(&mut iter, c)));
                     }
                 }
             }
-            '\'' | '"' => tokens.push(Token::String(collect_string(&mut iter, None)?)),
+            '\'' | '"' => {
+                tokens.push(Token::String(collect_string(&mut iter, None)?));
+            }
             '0'..='9' => tokens.push(Token::Number(collect_number(&mut iter, None)?)),
             '\n' => {
-                if iter.is_start_of_line() || opened {
+                if iter.is_start_of_line() || !brackets_stack.is_empty() {
                     iter.next();
                     tokens.push(Token::NL);
                 } else {
                     iter.next();
                     tokens.push(Token::NewLine);
                     let new_ind = collect_indent(&mut iter);
-                    let last_ind = *ind_stack.last().unwrap();
-                    if new_ind.len() > last_ind {
-                        ind_stack.push(new_ind.len());
+                    let last_ind = ind_stack.last().unwrap();
+                    if new_ind.len() > last_ind.len() {
+                        ind_stack.push(new_ind.clone());
                         tokens.push(Token::Indent(new_ind.clone()));
                     }
-                    while new_ind.len() < *ind_stack.last().unwrap() {
+                    while new_ind.len() < ind_stack.last().unwrap().len() {
                         ind_stack.pop();
                         tokens.push(Token::Dedent);
                     }
@@ -98,15 +100,22 @@ pub fn tokenize(text: impl ToString) -> Result<Vec<Token>> {
             c if OPERATORS.contains(c) => {
                 let operator = iter.next().unwrap();
                 match operator {
-                    '[' | '{' | '(' => opened = true,
-                    ']' | '}' | ')' => opened = false,
-                    '.' => match iter.peek() {
-                        Some('0'..='9') => {
+                    '[' | '{' | '(' => brackets_stack.push(operator),
+                    ']' if brackets_stack.last() == Some(&'[') => {
+                        brackets_stack.pop();
+                    }
+                    '}' if brackets_stack.last() == Some(&'{') => {
+                        brackets_stack.pop();
+                    }
+                    ')' if brackets_stack.last() == Some(&'(') => {
+                        brackets_stack.pop();
+                    }
+                    '.' => {
+                        if let Some('0'..='9') = iter.peek() {
                             tokens.push(Token::Number(collect_number(&mut iter, Some(operator))?));
                             continue;
                         }
-                        _ => {}
-                    },
+                    }
                     _ => {}
                 }
                 tokens.push(Token::OP(collect_operator(&mut iter, operator)?));
@@ -114,18 +123,12 @@ pub fn tokenize(text: impl ToString) -> Result<Vec<Token>> {
             c if c.is_alphabetic() || c == '_' => {
                 tokens.push(Token::Name(collect_name(&mut iter, None)));
             }
-            c if c.is_whitespace() => {
+            _ => {
                 iter.next();
-            }
-            c => {
-                return Err(TokenizeError::Char(
-                    format!("Unexpected char: {:?}", c),
-                    *iter.pos(),
-                ));
             }
         };
     }
-    while *ind_stack.last().unwrap() > 0 {
+    while !ind_stack.last().unwrap().is_empty() {
         ind_stack.pop();
         tokens.push(Token::Dedent);
     }

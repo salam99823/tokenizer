@@ -49,15 +49,23 @@ fn test_tokenize_different_indent_levels() {
 #[test]
 fn test_tokenize_different_strings() {
     let actual_tokens =
-        tokenize("'base 1'\"base 2\"r'raw 1'r\"raw \\n 2\"b'byte 1'b\"byte 2\"").unwrap();
+        tokenize("'base 1'\"base 2\"r'raw \\n 1'r\"raw \\n 2\"b'byte 1'b\"byte 2\" r'''\nmulti\nline\n1''' b\"\"\"\nmulti\nline\n2\"\"\" f'''format\nmulti\nline\n{string}'''").unwrap();
     use Token::*;
     let expected_tokens = vec![
         String("'base 1'".to_owned()),
         String("\"base 2\"".to_owned()),
-        String("r'raw 1'".to_owned()),
+        String("r'raw \\n 1'".to_owned()),
         String("r\"raw \\n 2\"".to_owned()),
         String("b'byte 1'".to_owned()),
         String("b\"byte 2\"".to_owned()),
+        String("r'''\nmulti\nline\n1'''".to_owned()),
+        String("b\"\"\"\nmulti\nline\n2\"\"\"".to_owned()),
+        FStringStart("f'''".to_owned()),
+        FStringMiddle("format\nmulti\nline\n".to_owned()),
+        OP("{".to_owned()),
+        Name("string".to_owned()),
+        OP("}".to_owned()),
+        FStringEnd("'''".to_owned()),
         NewLine,
         EndMarker,
     ];
@@ -66,7 +74,7 @@ fn test_tokenize_different_strings() {
 
 #[test]
 fn test_tokenize_numbers() {
-    let actual_tokens = tokenize("1234567890 1.234 0.67890 1j 0.2e-9j 4_3e-5").unwrap();
+    let actual_tokens = tokenize("1234567890 1.234 0.67890 1j 0.2e-9j 4_3e-5 .532").unwrap();
     use Token::*;
     let expected_tokens = vec![
         Number("1234567890".to_owned()),
@@ -75,6 +83,7 @@ fn test_tokenize_numbers() {
         Number("1j".to_owned()),
         Number("0.2e-9j".to_owned()),
         Number("4_3e-5".to_owned()),
+        Number(".532".to_owned()),
         NewLine,
         EndMarker,
     ];
@@ -140,29 +149,64 @@ fn test_tokenize_operators() {
 }
 #[test]
 fn test_tokenize_() {
-    let actual_tokens = tokenize(
+    let actual = tokenize(
         "
-(iter_num + pos.0, char_num + pos.1),
+TokenizeError::EscapeSeq(msg, (iter_num, char_num)) => {
+TokenizeError::EscapeSeq(
+        msg,
+        (iter_num + pos.0, char_num + pos.1),
+    )
+}
 ",
     )
     .unwrap();
-    println!("[");
-    for i in actual_tokens {
-        match i {
-            Token::EndMarker => println!("('EndMarker',''),"),
-            Token::Name(t) => println!("('Name',{:?}),", t),
-            Token::Number(t) => println!("('Number',{:?}),", t),
-            Token::String(t) => println!("('String',{:?}),", t),
-            Token::NewLine => println!("('NewLine', ''),"),
-            Token::OP(t) => println!("('OP',{:?}),", t),
-            Token::Indent(t) => println!("('Indent',{:?}),", t),
-            Token::Dedent => println!("('Dedent',''),"),
-            Token::Comment(t) => println!("('Comment',{:?}),", t),
-            Token::NL => println!("('NL',''),"),
-            Token::FStringStart(t) => println!("('FStringStart', {:?}),", t),
-            Token::FStringMiddle(t) => println!("('FStringMiddle', {:?}),", t),
-            Token::FStringEnd(t) => println!("('FStringEnd', {:?}),", t),
-        }
-    }
-    println!("]");
+    use Token::*;
+    let expected = vec![
+        NL,
+        Name("TokenizeError".to_owned()),
+        OP(":".to_owned()),
+        OP(":".to_owned()),
+        Name("EscapeSeq".to_owned()),
+        OP("(".to_owned()),
+        Name("msg".to_owned()),
+        OP(",".to_owned()),
+        OP("(".to_owned()),
+        Name("iter_num".to_owned()),
+        OP(",".to_owned()),
+        Name("char_num".to_owned()),
+        OP(")".to_owned()),
+        OP(")".to_owned()),
+        OP("=".to_owned()),
+        OP(">".to_owned()),
+        OP("{".to_owned()),
+        NL,
+        Name("TokenizeError".to_owned()),
+        OP(":".to_owned()),
+        OP(":".to_owned()),
+        Name("EscapeSeq".to_owned()),
+        OP("(".to_owned()),
+        NL,
+        Name("msg".to_owned()),
+        OP(",".to_owned()),
+        NL,
+        OP("(".to_owned()),
+        Name("iter_num".to_owned()),
+        OP("+".to_owned()),
+        Name("pos".to_owned()),
+        Number(".0".to_owned()),
+        OP(",".to_owned()),
+        Name("char_num".to_owned()),
+        OP("+".to_owned()),
+        Name("pos".to_owned()),
+        Number(".1".to_owned()),
+        OP(")".to_owned()),
+        OP(",".to_owned()),
+        NL,
+        OP(")".to_owned()),
+        NL,
+        OP("}".to_owned()),
+        NewLine,
+        EndMarker,
+    ];
+    assert_eq!(actual, expected);
 }
