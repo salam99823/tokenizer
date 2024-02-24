@@ -1,11 +1,25 @@
-use crate::{privat::ModPeekable, Result, TokenizeError};
+use crate::{privat::PeekableCharTracker, Result, TokenizeError};
 
-/// Method to collect number as Python tokenizer
-pub fn collect_number(iter: &mut ModPeekable, digit: Option<char>) -> Result<String> {
+/// Collects a number as a Python tokenizer.
+///
+/// # Arguments
+///
+/// * `iter` - A mutable reference to the PeekableCharTracker iterator.
+/// * `digit` - An optional starting digit character.
+///
+/// # Returns
+///
+/// A Result containing the collected number as a String or an error.
+///
+pub fn collect_number(iter: &mut PeekableCharTracker, digit: Option<char>) -> Result<String> {
     let mut number = String::new();
+
+    // Add the starting digit if provided
     if let Some(d) = digit {
-        number.push(d)
+        number.push(d);
     }
+
+    // Iterate over characters to collect the number
     while let Some(c) = iter.peek() {
         match c {
             '0'..='9' => {
@@ -18,8 +32,8 @@ pub fn collect_number(iter: &mut ModPeekable, digit: Option<char>) -> Result<Str
                     _ => {
                         return Err(TokenizeError::Number(
                             "Invalid decimal literal".to_owned(),
-                            *iter.pos(),
-                        ))
+                            iter.pos(),
+                        ));
                     }
                 }
             }
@@ -44,8 +58,8 @@ pub fn collect_number(iter: &mut ModPeekable, digit: Option<char>) -> Result<Str
                             _ => {
                                 return Err(TokenizeError::Number(
                                     "Invalid decimal literal".to_owned(),
-                                    *iter.pos(),
-                                ))
+                                    iter.pos(),
+                                ));
                             }
                         }
                     }
@@ -55,5 +69,6 @@ pub fn collect_number(iter: &mut ModPeekable, digit: Option<char>) -> Result<Str
             _ => break,
         }
     }
+
     Ok(number)
 }

@@ -49,7 +49,7 @@ fn test_tokenize_different_indent_levels() {
 #[test]
 fn test_tokenize_different_strings() {
     let actual_tokens =
-        tokenize("'base 1'\"base 2\"r'raw \\n 1'r\"raw \\n 2\"b'byte 1'b\"byte 2\" r'''\nmulti\nline\n1''' b\"\"\"\nmulti\nline\n2\"\"\"").unwrap();
+        tokenize("'base 1'\"base 2\"r'raw \\n 1'r\"raw \\n 2\"b'byte 1'b\"byte 2\" r'''\nmulti\nline\n1''' b\"\"\"\nmulti\nline\n2\"\"\" f'''format\nmulti\nline\n{string}'''").unwrap();
     use Token::*;
     let expected_tokens = vec![
         String("'base 1'".to_owned()),
@@ -60,6 +60,12 @@ fn test_tokenize_different_strings() {
         String("b\"byte 2\"".to_owned()),
         String("r'''\nmulti\nline\n1'''".to_owned()),
         String("b\"\"\"\nmulti\nline\n2\"\"\"".to_owned()),
+        FStringStart("f'''".to_owned()),
+        FStringMiddle("format\nmulti\nline\n".to_owned()),
+        OP("{".to_owned()),
+        Name("string".to_owned()),
+        OP("}".to_owned()),
+        FStringEnd("'''".to_owned()),
         NewLine,
         EndMarker,
     ];

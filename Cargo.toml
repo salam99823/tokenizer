@@ -1,6 +1,6 @@
 [package]
 name = "tokenizer_py"
-version = "0.1.5"
+version = "0.2.0"
 edition = "2021"
 repository = "https://github.com/salam99823/tokenizer"
 description = "crate with a tokenizer that works like a Python tokenizer"

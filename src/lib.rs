@@ -4,7 +4,7 @@ use collectors::{
 };
 pub use error::TokenizeError;
 
-use privat::ModPeekable;
+use privat::PeekableCharTracker;
 pub use token::Token;
 
 mod collectors;
@@ -48,7 +48,7 @@ pub fn tokenize(text: impl ToString) -> Result<Vec<Token>> {
         text.push('\n')
     }
 
-    let mut iter = ModPeekable::new(text.chars().peekable());
+    let mut iter = PeekableCharTracker::new(text.chars().peekable());
     // A wrapper for Peekable<Chars>
     // having a tuple: (usize, usize)
     // to specify a position in the text
@@ -60,12 +60,12 @@ pub fn tokenize(text: impl ToString) -> Result<Vec<Token>> {
 
     while let Some(c) = iter.peek() {
         match *c {
-            'r' | 'f' | 'b' | 'u' => {
+            'r' | 'f' | 'b' | 'u' | 'R' | 'F' | 'B' | 'U' => {
                 let c = iter.next();
                 // collecting a prefix
                 match (c, iter.peek()) {
-                    (Some('f'), Some('\'' | '"')) => collect_fstring(&mut iter, &mut tokens)?,
-                    (Some('r' | 'b' | 'u'), Some('\'' | '"')) => {
+                    (Some('f' | 'F'), Some('\'' | '"')) => collect_fstring(&mut iter, &mut tokens, c.unwrap())?,
+                    (Some('r' | 'R' | 'b' | 'B' | 'u' | 'U'), Some('\'' | '"')) => {
                         tokens.push(Token::String(collect_string(&mut iter, c)?));
                     }
                     (c, _) => {

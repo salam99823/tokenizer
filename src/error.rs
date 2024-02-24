@@ -27,27 +27,35 @@ pub enum TokenizeError {
 
 impl Debug for TokenizeError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        
         match self {
             TokenizeError::EscapeSeq(desc, pos) => {
-                write!(f, "Escape Sequence Error: {} at pos {:?}", desc, pos)
+                let (line, character) = pos;
+                write!(f, "Escape Sequence Error: {} at pos {}:{}", desc, line, character)
             }
             TokenizeError::String(desc, pos) => {
-                write!(f, "String Error: {} at pos {:?}", desc, pos)
+                let (line, character) = pos;
+                write!(f, "String Error: {} at pos {}:{}", desc, line, character)
             }
             TokenizeError::Number(desc, pos) => {
-                write!(f, "Number Error: {} at pos {:?}", desc, pos)
+                let (line, character) = pos;
+                write!(f, "Number Error: {} at pos {}:{}", desc, line, character)
             }
             TokenizeError::Operator(desc, pos) => {
-                write!(f, "Operator Error: {} at pos {:?}", desc, pos)
+                let (line, character) = pos;
+                write!(f, "Operator Error: {} at pos {}:{}", desc, line, character)
             }
             TokenizeError::Char(desc, pos) => {
-                write!(f, "Character Error: {} at pos {:?}", desc, pos)
+                let (line, character) = pos;
+                write!(f, "Character Error: {} at pos {}:{}", desc, line, character)
             }
             TokenizeError::Indent(desc, pos) => {
-                write!(f, "Indentation Error: {} at pos {:?}", desc, pos)
+                let (line, character) = pos;
+                write!(f, "Indentation Error: {} at pos {}:{}", desc, line, character)
             }
             TokenizeError::EndOfFile(desc, pos) => {
-                write!(f, "End of File Error: {} at pos {:?}", desc, pos)
+                let (line, character) = pos;
+                write!(f, "End of File Error: {} at pos {}:{}", desc, line, character)
             }
         }
     }

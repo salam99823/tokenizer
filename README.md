@@ -43,7 +43,8 @@ The tokenizer recognizes the following tokens:
   - [x] `format-String`: format string from python.
   - [x] `byte-String`: byte string from python.
   - [x] `raw-String`: raw string.
-  - [ ] `multy-line-String`: single- and double-quoted multy-line-string.
+  - [x] `multy-line-String`: single- and double-quoted multy-line-string.
+  - [ ] `combined-string`: string with combined prefix.
 - [x] `Operators`: arithmetic, comparison, and other operators.
 - [x] `Comments`: single-line comments.
 
@@ -57,7 +58,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tokenizer_py = "0.1.5"
+tokenizer_py = "0.2.0"
 ```
 
 ## Exemples
