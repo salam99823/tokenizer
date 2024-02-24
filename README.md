@@ -34,16 +34,16 @@ The tokenizer recognizes the following tokens:
 
 - [x] `Whitespace`: spaces, tabs, and newlines.
 - [x] `Numbers`: integers and floating-point numbers.
-    - [x] `float`: floats numbers.
-    - [x] `int`: integer numbers.
-    - [x] `complex`: complex numbers.
+  - [x] `float`: floats numbers.
+  - [x] `int`: integer numbers.
+  - [x] `complex`: complex numbers.
 - [x] `Names`: identifiers and keywords.
 - [x] `Strings`: single- and double-quoted strings.
-    - [x] `basic-String`: single- and double-quoted strings.
-    - [x] `format-String`: format string from python.
-    - [x] `byte-String`: byte string from python.
-    - [x] `raw-String`: raw string.
-    - [ ] `multy-line-String`: single- and double-quoted multy-line-string.
+  - [x] `basic-String`: single- and double-quoted strings.
+  - [x] `format-String`: format string from python.
+  - [x] `byte-String`: byte string from python.
+  - [x] `raw-String`: raw string.
+  - [ ] `multy-line-String`: single- and double-quoted multy-line-string.
 - [x] `Operators`: arithmetic, comparison, and other operators.
 - [x] `Comments`: single-line comments.
 
@@ -57,7 +57,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tokenizer_py = "0.1.4"
+tokenizer_py = "0.1.5"
 ```
 
 ## Exemples

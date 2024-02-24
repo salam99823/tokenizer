@@ -66,14 +66,16 @@ pub fn tokenize(text: impl ToString) -> Result<Vec<Token>> {
                 match (c, iter.peek()) {
                     (Some('f'), Some('\'' | '"')) => collect_fstring(&mut iter, &mut tokens)?,
                     (Some('r' | 'b' | 'u'), Some('\'' | '"')) => {
-                        tokens.push(Token::String(collect_string(&mut iter, c)?))
+                        tokens.push(Token::String(collect_string(&mut iter, c)?));
                     }
                     (c, _) => {
                         tokens.push(Token::Name(collect_name(&mut iter, c)));
                     }
                 }
             }
-            '\'' | '"' => tokens.push(Token::String(collect_string(&mut iter, None)?)),
+            '\'' | '"' => {
+                tokens.push(Token::String(collect_string(&mut iter, None)?));
+            }
             '0'..='9' => tokens.push(Token::Number(collect_number(&mut iter, None)?)),
             '\n' => {
                 if iter.is_start_of_line() || !brackets_stack.is_empty() {
@@ -108,9 +110,11 @@ pub fn tokenize(text: impl ToString) -> Result<Vec<Token>> {
                     ')' if brackets_stack.last() == Some(&'(') => {
                         brackets_stack.pop();
                     }
-                    '.' => if let Some('0'..='9') = iter.peek() {
-                        tokens.push(Token::Number(collect_number(&mut iter, Some(operator))?));
-                        continue;
+                    '.' => {
+                        if let Some('0'..='9') = iter.peek() {
+                            tokens.push(Token::Number(collect_number(&mut iter, Some(operator))?));
+                            continue;
+                        }
                     }
                     _ => {}
                 }

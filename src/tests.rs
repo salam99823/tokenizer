@@ -49,15 +49,17 @@ fn test_tokenize_different_indent_levels() {
 #[test]
 fn test_tokenize_different_strings() {
     let actual_tokens =
-        tokenize("'base 1'\"base 2\"r'raw 1'r\"raw \\n 2\"b'byte 1'b\"byte 2\"").unwrap();
+        tokenize("'base 1'\"base 2\"r'raw \\n 1'r\"raw \\n 2\"b'byte 1'b\"byte 2\" r'''\nmulti\nline\n1''' b\"\"\"\nmulti\nline\n2\"\"\"").unwrap();
     use Token::*;
     let expected_tokens = vec![
         String("'base 1'".to_owned()),
         String("\"base 2\"".to_owned()),
-        String("r'raw 1'".to_owned()),
+        String("r'raw \\n 1'".to_owned()),
         String("r\"raw \\n 2\"".to_owned()),
         String("b'byte 1'".to_owned()),
         String("b\"byte 2\"".to_owned()),
+        String("r'''\nmulti\nline\n1'''".to_owned()),
+        String("b\"\"\"\nmulti\nline\n2\"\"\"".to_owned()),
         NewLine,
         EndMarker,
     ];

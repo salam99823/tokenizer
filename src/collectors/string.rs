@@ -5,6 +5,7 @@ pub fn collect_string(iter: &mut ModPeekable, prefix: Option<char>) -> Result<St
     let mut string = String::new();
 
     let quot = iter.next().unwrap();
+
     if let Some(prefix) = prefix {
         match prefix {
             'u' | 'b' | 'r' => string.push(prefix),
@@ -17,10 +18,21 @@ pub fn collect_string(iter: &mut ModPeekable, prefix: Option<char>) -> Result<St
         }
     }
     string.push(quot);
+
+    let multi_line = {
+        let mut iter_clone = iter.clone();
+        iter_clone.next() == Some(quot) && iter_clone.next() == Some(quot)
+    };
+    if multi_line {
+        string.push(iter.next().unwrap());
+        string.push(iter.next().unwrap());
+    }
     while let Some(c) = iter.peek() {
         match c {
             '\\' if !string.starts_with('r') => {
-                if let Some(c) = &iter.next() {
+                let i = iter.next();
+                println!("{:?}", i);
+                if let Some(c) = &i {
                     match *c {
                         '\\' => string.push('\\'),
                         '"' => string.push('"'),
@@ -51,7 +63,7 @@ pub fn collect_string(iter: &mut ModPeekable, prefix: Option<char>) -> Result<St
                 }
             }
             '\\' => string.push('\\'),
-            '\n' => {
+            '\n' if !multi_line => {
                 return Err(TokenizeError::String(
                     "Not cloused string".to_owned(),
                     *iter.pos(),
@@ -59,9 +71,11 @@ pub fn collect_string(iter: &mut ModPeekable, prefix: Option<char>) -> Result<St
             }
             c => {
                 if *c == quot {
-                    string.push(*c);
-
-                    iter.next();
+                    string.push(iter.next().unwrap());
+                    if multi_line {
+                        string.push(iter.next().unwrap());
+                        string.push(iter.next().unwrap());
+                    }
                     break;
                 }
                 string.push(*c);
