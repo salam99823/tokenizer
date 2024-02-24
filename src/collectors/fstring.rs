@@ -7,11 +7,12 @@ pub fn collect_fstring(iter: &mut ModPeekable, tokens: &mut Vec<Token>) -> Resul
     while let Some(c) = iter.next_if(|c| *c != quot) {
         match c {
             '{' => {
-                tokens.push(Token::OP("{".to_owned()));
                 let mut inner = String::new();
+                inner.push('{');
                 while let Some(c) = iter.next_if(|c| *c != '}') {
                     inner.push(c);
                 }
+                inner.push(iter.next().unwrap());
                 tokens.extend(match tokenize(inner) {
                     Ok(i) => i,
                     Err(e) => {
@@ -54,9 +55,6 @@ pub fn collect_fstring(iter: &mut ModPeekable, tokens: &mut Vec<Token>) -> Resul
                 });
                 tokens.pop();
                 tokens.pop();
-
-                iter.next();
-                tokens.push(Token::OP("}".to_owned()));
             }
             c => {
                 let mut fstring_midle = String::new();
